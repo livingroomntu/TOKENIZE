@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Order Book Updates</title>
+</head>
+<body>
+    <h1>Real-time Order Book Updates</h1>
+    <h3>Bid List</h3>
+    <ul id="bid-list"></ul>
+    
+    <h3>Ask List</h3>
+    <ul id="ask-list"></ul>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script>
+        // Connect to the WebSocket server
+        const socket = io.connect('https://tokenize.onrender.com');
+
+        // Function to limit the number of items in a list to 12
+        function limitListSize(listElement, maxItems) {
+            while (listElement.children.length > maxItems) {
+                listElement.removeChild(listElement.firstChild);
+            }
+        }
+
+        // Handle incoming 'order_update' events
+        socket.on('order_update', function(data) {
+            let listElement;
+            if (data.type === 'bid') {
+                listElement = document.getElementById('bid-list');
+            } else if (data.type === 'ask') {
+                listElement = document.getElementById('ask-list');
+            }
+            
+            // Create a new list item for the order update
+            const listItem = document.createElement('li');
+            listItem.textContent = `Price: ${data.price}, Size: ${data.size}`;
+            
+            // Append the new list item to the correct list
+            listElement.appendChild(listItem);
+
+            // Limit the list size to 12 items
+            limitListSize(listElement, 12);
+        });
+    </script>
+</body>
+</html>
